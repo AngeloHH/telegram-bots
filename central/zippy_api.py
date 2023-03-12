@@ -27,7 +27,9 @@ class Zippy:
         }
 
     def get_url(self):
-        script = self.container.find_all('script')[2].text
+        scripts, var_name = self.container.find_all('script'), 'var somffunction'
+        script = next(script.text for script in scripts if var_name in script.text)
+        script += f'\n{var_name.split(" ")[-1]}()'
         script = script.replace("document.getElementById('dlbutton').", '')
         script = script.replace("document.getElementById('fimage').", '')
         script = script.replace("document.getElementById('fimage')", 'false')

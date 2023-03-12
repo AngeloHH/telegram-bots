@@ -43,3 +43,13 @@ class Token(base):
     id = Column(String, primary_key=True)
     expiration = Column(DateTime(timezone=True), onupdate=func.now())
 
+
+class Chat(base):
+    __tablename__ = 'chats'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    description = Column(String)
+    invite_link = Column(String)
+    type = Column(String)
+    bot_id = Column(Integer)

@@ -34,3 +34,11 @@ class Language(NewLanguage):
 class Token(BaseModel):
     id: int
     expiration: datetime = datetime.now()
+
+
+class Chat(BaseModel):
+    id: int
+    title: str = None
+    description: str = None
+    invite_link: str = None
+    type: str

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import FileResponse
 
 from central import crud, models, schemas
-from central.crud import mega_download, zippy_download, split_zip
+from central.crud import mega_download, zippy_download, split_zip, media
 from central.database import session_local, engine
 
 models.base.metadata.create_all(bind=engine)
@@ -69,6 +69,17 @@ def get_text(bot_id: int, lang: str, key: str, db: Session = Depends(get_db)):
     return crud.get_text(db, bot_id, key, lang)
 
 
+@app.post("/bot/{bot_id}/chat/add")
+def add_chat(bot_id: int, chat: schemas.Chat, db: Session = Depends(get_db)):
+    return crud.create_chat(db, chat, bot_id)
+
+
+@app.get("/bot/{bot_id}/chat/list")
+def list_chats(bot_id: int, db: Session = Depends(get_db)):
+    filters = models.Chat.bot_id == bot_id
+    return db.query(models.Chat).filter(filters).all()
+
+
 @app.get("/tokens/generate")
 def add_token(db: Session = Depends(get_db)):
     return {'token': crud.add_token(db)}
@@ -102,8 +113,8 @@ def download_file(server: str, url: str, max_size: int = 50, db: Session = Depen
 def delete_media(filename: str, db: Session = Depends(get_db)):
     error = HTTPException(403, 'Parameter not allowed')
     if '/' in filename or '\\' in filename: raise error
-    if os.path.exists('temp' + os.sep + filename):
-        return os.remove('temp' + os.sep + filename)
+    if os.path.exists(media() + os.sep + filename):
+        return os.remove(media() + os.sep + filename)
     raise HTTPException(404, detail="File not found")
 
 
@@ -111,7 +122,7 @@ def delete_media(filename: str, db: Session = Depends(get_db)):
 def get_media(filename: str, db: Session = Depends(get_db)):
     error = HTTPException(403, 'Parameter not allowed')
     if '/' in filename or '\\' in filename: raise error
-    path = 'temp' + os.sep + filename
+    path = media() + os.sep + filename
     if os.path.exists(path): return FileResponse(path)
     raise HTTPException(404, detail="File not found")
 

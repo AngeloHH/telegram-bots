@@ -4,11 +4,17 @@ from cryptography.fernet import Fernet
 from mega.mega import Mega
 
 from sqlalchemy.orm import Session
-from starlette.responses import FileResponse
 
 from central import models, schemas
 from central.split_zip import zip_file, file_split
 from central.zippy_api import Zippy
+
+
+def media(*args):
+    path = f'..{os.sep}temp'
+    if len(args) != 0: path = path + os.sep
+    if not os.path.exists(path): os.makedirs(path)
+    return path + os.sep.join(arg for arg in args)
 
 
 def get_user(db: Session, user_id: int):
@@ -94,23 +100,31 @@ def get_token(db: Session, token: str):
     return query.first()
 
 
+def create_chat(db: Session, chat: schemas.Chat, bot_id: int):
+    db_chat = models.Chat(**vars(chat), bot_id=bot_id)
+    db.add(db_chat)
+    db.commit()
+    db.refresh(db_chat)
+    return vars(chat)
+
+
 def mega_download(url) -> str:
-    path = 'temp' + os.sep + Mega().get_public_url_info(url)['name']
+    path = media(Mega().get_public_url_info(url)['name'])
     if os.path.exists(path): return path
-    return 'temp' + os.sep + Mega().download_url(url, 'temp').name
+    return media(Mega().download_url(url, media()).name)
 
 
 def zippy_download(url) -> str:
     zippy_api = Zippy(url)
     zippy_api.start()
-    path = 'temp' + os.sep + zippy_api.get_details()['name']
+    path = media(zippy_api.get_details()['name'])
     if os.path.exists(path): return path
-    return zippy_api.download('temp').name
+    return zippy_api.download(media()).name
 
 
 def split_zip(file_path: str):
     zipped = zip_file([file_path], file_path + '.zip')
-    files = file_split(zipped, 49, 'temp')
+    files = file_split(zipped, 49, media())
     def get_name(file): return file.name.split(os.sep)[-1]
     os.remove(zipped.name), os.remove(file_path)
     return ['/media/get/' + get_name(file) for file in files]
