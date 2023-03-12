@@ -1,22 +1,39 @@
+from _thread import start_new_thread
+from time import sleep
+
+import cloudscraper
 import requests
 import telebot
 from telebot.types import Message
 
 from menhera_bot.anime.crud import AnimeFLV
 from menhera_bot.anime.models import list_chapters, chapter_details, anime_details, anime_selected
-from menhera_bot.api import say, host, send_sticker
+from menhera_bot.api import say, host, send_sticker, invalid_type
+from menhera_bot.logger import BotLogger
 
 
 class AnimeCommands:
     def __int__(self, bot: telebot.TeleBot, proxy=None):
         self.chapter_list, self.animes = {}, {}
         self.account_data, self.bot = {}, bot
+        self.anime_api = AnimeFLV()
+        self.create_scraper(proxy)
+        start_new_thread(self.update_scraper, (proxy,))
+
+    def create_scraper(self, proxy=None):
         while True:
-            self.anime_api = AnimeFLV()
+            scraper = cloudscraper.create_scraper()
+            self.anime_api.cloud_scraper = scraper
             self.anime_api.cloud_scraper.proxies = proxy
             response = self.anime_api.cloud_scraper.get
             response = response(self.anime_api.base_url)
             if response.status_code == 200: break
+
+    def update_scraper(self, proxy=None):
+        while True:
+            sleep(10 * 60)
+            try: self.create_scraper(proxy)
+            except: pass
 
     def download_chapter(self, message: Message, url):
         key = 'downloading-chapter', 'download-error'
@@ -40,8 +57,10 @@ class AnimeCommands:
         :param message: Message sending by user
         :param chapters: List of today chapters
         """
+        if invalid_type(int, message, self.bot, 'es'): return
         chapter = chapters[int(message.text) - 1]
         getter = self.anime_api.cloud_scraper
+        BotLogger().action_log(message)
         chapter = chapter_details(getter, chapter)
         key = next(k for k in chapter[1].keys())
         self.chapter_list[key] = chapter[1][key]
@@ -60,7 +79,9 @@ class AnimeCommands:
         args = message.chat.id, anime_selected(anime, 50)
         reply = self.bot.send_photo(args[0], **args[1])
         args = self.bot, message, 'too-much-chapters'
-        if chapters_count > 50: send_sticker(*args)
+        if chapters_count > 50:
+            send_sticker(*args)
+            say(self.bot, message, 'es', args[2])
         chapters = anime['chapters']
         chapters = [{'url': url} for url in chapters]
         args = reply, self.print_chapter, chapters

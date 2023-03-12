@@ -7,7 +7,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardBu
 from menhera_bot.anime import AnimeFLV
 
 
-def get_stars(points=0.0): return ''.join(emoji.emojize(':star:') for a in range(round(points)))
+def get_stars(points=0.0): return ''.join(emoji.emojize(':star:') for _ in range(round(points)))
 
 
 def list_chapters(chapters: list) -> dict:

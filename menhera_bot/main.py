@@ -5,8 +5,10 @@ import telebot
 from telebot import apihelper
 from telebot.types import Message
 
-from api import create_user, check_admin, add_text, say, add_sticker, send_sticker, host, set_admin, get_proxy, say_help
+from api import create_user, check_admin, add_text, say, add_sticker, send_sticker, host, set_admin, get_proxy, \
+    say_help, chat_list
 from menhera_bot.anime import AnimeCommands
+from menhera_bot.logger import BotLogger
 
 token = '5477288499:AAHF5OgQCa4jhOZS1wvLB0qp-CKU4gyLxvY'
 bot = telebot.TeleBot(token)
@@ -28,16 +30,19 @@ def send_welcome(message: Message):
 
 @bot.message_handler(commands=['chapter_today'])
 def chapters_command(message: Message):
+    """Muestra el listado de capitulos del dia de los animes en transmision."""
     anime_commands.print_chapters(message)
 
 
 @bot.message_handler(commands=['anime_today'])
 def animes_command(message: Message):
+    """Muestra el listado de animes en transmision."""
     anime_commands.animes_today(message)
 
 
-@bot.message_handler(commands=['anime_find'])
+@bot.message_handler(commands=['anime_find', 'anime_search'])
 def find_anime(message: Message):
+    """Busca un anime con este comando."""
     anime_commands.search_result(message)
 
 
@@ -82,6 +87,7 @@ def command_not_found(message: Message):
 
 @bot.callback_query_handler(func=lambda message: True)
 def query(message: telebot.types.CallbackQuery):
+    BotLogger().action_log(message)
     chapter_list = anime_commands.chapter_list
     reply = json.loads(message.data)
     is_chapter = type(reply) == list

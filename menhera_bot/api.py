@@ -77,7 +77,7 @@ def add_text(message: Message, bot_id, lang: str):
     text = [{'name': key, 'text': chat} for chat in text]
     url = host('bot', bot_id, 'lang', lang, 'add')
     [requests.post(url, json=t) for t in text]
-    
+
 
 def add_sticker(message: Message, bot, lang: str):
     url = host('bot', bot.get_me().id, 'stickers')
@@ -107,3 +107,20 @@ def set_admin(bot: telebot.TeleBot, message: Message):
         return say(bot, message, 'es', 'invalid-token')
     send_sticker(bot, message, 'dazzling')
     say(bot, message, 'es', 'new-admin')
+
+
+def chat_list(bot_id):
+    url = host('bot', bot_id, 'chat', 'list')
+    print(requests.get(url).content)
+    return requests.get(url).json()
+
+
+def invalid_type(data_type, message, bot, lang):
+    is_invalid = True
+    try:
+        data_type(message.text)
+        is_invalid = False
+    except:
+        say(bot, message, lang, 'invalid-query')
+        send_sticker(bot, message, 'clumsy')
+    return is_invalid
