@@ -5,13 +5,12 @@ import telebot
 from telebot import apihelper
 from telebot.types import Message
 
-from api import create_user, check_admin, add_text, say, add_sticker, send_sticker, host, set_admin, get_proxy, \
-    say_help, chat_list
+from api import create_user, check_admin, add_text, say, add_sticker, send_sticker, host, set_admin, say_help, chat_list
+from central.utils.args_manager import get_arg, get_proxy
 from menhera_bot.anime import AnimeCommands
 from menhera_bot.logger import BotLogger
 
-token = '5477288499:AAHF5OgQCa4jhOZS1wvLB0qp-CKU4gyLxvY'
-bot = telebot.TeleBot(token)
+bot = telebot.TeleBot(get_arg('token')['value'])
 apihelper.proxy = get_proxy()
 anime_commands = AnimeCommands()
 anime_commands.__int__(bot, apihelper.proxy)

@@ -1,5 +1,4 @@
 import json
-from sys import argv
 
 import requests
 import telebot
@@ -8,16 +7,6 @@ from telebot.types import Message
 
 from menhera_bot.help import get_commands
 from menhera_bot.logger import BotLogger
-
-
-def get_proxy():
-    proxy = argv[argv.index('-p') + 1] if '-p' in argv else None
-    if proxy is None and '--proxy=' in str(argv):
-        args = iter(arg for arg in argv if '--proxy=' in arg)
-        proxy = next(args, None)
-        proxy = None if proxy is None else proxy.replace('--proxy=', '')
-    proxy = None if proxy is None else {'http': proxy, 'https': proxy}
-    return proxy
 
 
 def host(*args):
@@ -37,8 +26,7 @@ def say(bot: telebot.TeleBot, message: Message, language, key):
     return messages
 
 
-def say_help():
-    text = 'Use /help para mostrar el uso de comandos:\n\n'
+def say_help(text='Use /help para mostrar el uso de comandos:\n\n'):
     for command in get_commands('main.py'):
         text += f'» /{command.command}\n '
         text += f'{command.description}\n\n'
