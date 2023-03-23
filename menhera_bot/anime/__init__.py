@@ -22,18 +22,19 @@ class AnimeCommands:
 
     def create_scraper(self, proxy=None):
         while True:
-            scraper = cloudscraper.create_scraper()
-            self.anime_api.cloud_scraper = scraper
-            self.anime_api.cloud_scraper.proxies = proxy
-            response = self.anime_api.cloud_scraper.get
-            response = response(self.anime_api.base_url)
-            if response.status_code == 200: break
+            try:
+                scraper = cloudscraper.create_scraper()
+                self.anime_api.cloud_scraper = scraper
+                self.anime_api.cloud_scraper.proxies = proxy
+                response = self.anime_api.cloud_scraper.get
+                response = response(self.anime_api.base_url)
+                if response.status_code == 200: break
+            except: pass
 
     def update_scraper(self, proxy=None):
         while True:
             sleep(10 * 60)
-            try: self.create_scraper(proxy)
-            except: pass
+            self.create_scraper(proxy)
 
     def download_chapter(self, message: Message, url):
         key = 'downloading-chapter', 'download-error'

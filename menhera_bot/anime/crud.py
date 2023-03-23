@@ -83,22 +83,25 @@ class AnimeFLV:
             'votes': float(soup.find('span', {'id': 'votes_prmd'}).string),
         }
 
+    def next_page(self, soup) -> str or None:
+        pagination = soup.find('ul', {'class': 'pagination'})
+        pages = pagination.find_all('li')
+        if len(pages) == 0: return None
+        next_url = pages[len(pages) - 1].find('a')['href']
+        no_more = next_url == '#' or '&page=1' in next_url
+        return None if no_more else next_url
+
     def find_anime(self, search):
         url = f'{self.base_url}/browse?q={search}'
-        response = self.cloud_scraper.get(url).content
-        soup = BeautifulSoup(response, 'html.parser')
-        paginator = soup.find('ul', {'class': 'pagination'}).find_all('li')
         anime_result = []
-        next_url = paginator[len(paginator) - 1].find('a')['href']
-        while True:
+        while url is not None:
+            response = self.cloud_scraper.get(url).content
+            soup = BeautifulSoup(response, 'html.parser')
+            animes = soup.find('ul', {'class': 'ListAnimes'})
+            if animes is None: break
             anime_result += [
                 self.base_url + anime.find('a')['href']
-                for anime in soup.find('ul', {'class': 'ListAnimes'}).find_all('li')
+                for anime in animes.find_all('li')
             ]
-            if next_url == '#' or '&page=1' in next_url:
-                break
-            response = self.cloud_scraper.get(self.base_url + next_url).content
-            soup = BeautifulSoup(response, 'html.parser')
-            paginator = soup.find('ul', {'class': 'pagination'}).find_all('li')
-            next_url = paginator[len(paginator) - 1].find('a')['href']
+            url = self.next_page(soup)
         return anime_result
