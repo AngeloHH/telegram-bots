@@ -9,7 +9,7 @@ from telebot.types import Message
 from menhera_bot.anime.crud import AnimeFLV
 from menhera_bot.anime.models import list_chapters, chapter_details, anime_details, anime_selected
 from menhera_bot.api import say, host, send_sticker, invalid_type
-from menhera_bot.logger import BotLogger
+from central.utils.logger import BotLogger
 
 
 class AnimeCommands:

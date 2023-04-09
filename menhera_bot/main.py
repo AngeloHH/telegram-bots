@@ -5,10 +5,12 @@ import telebot
 from telebot import apihelper
 from telebot.types import Message
 
-from api import create_user, check_admin, add_text, say, add_sticker, send_sticker, host, set_admin, say_help, chat_list
+from api import say, send_sticker, host, chat_list
 from central.utils.args_manager import get_arg, get_proxy
+from central.utils.query_manager import create_user, check_admin, set_admin
+from central.utils.talk_manager import say_help, add_text, add_sticker
 from menhera_bot.anime import AnimeCommands
-from menhera_bot.logger import BotLogger
+from central.utils.logger import BotLogger
 
 bot = telebot.TeleBot(get_arg('token')['value'])
 apihelper.proxy = get_proxy()
@@ -68,7 +70,10 @@ def set_token(message: Message):
 
 @bot.message_handler(commands=['set_admin'])
 def new_admin(message: Message):
-    set_admin(bot, message)
+    if set_admin(message).status_code == 200:
+        send_sticker(bot, message, 'dazzling')
+        say(bot, message, 'es', 'new-admin')
+    else: say(bot, message, 'es', 'invalid-token')
 
 
 @bot.message_handler(content_types=['sticker'], func=check_admin)
