@@ -5,7 +5,7 @@ import telebot
 from telebot.types import Message
 
 from central.utils.query_manager import host
-from menhera_bot.help import get_commands
+from anime_bot.help import get_commands
 
 
 def say(bot: telebot.TeleBot, message: Message, language, key, **kwargs):

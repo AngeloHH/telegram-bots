@@ -4,7 +4,7 @@ import emoji
 import requests
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, KeyboardButton, ReplyKeyboardMarkup
 
-from menhera_bot.anime import AnimeFLV
+from anime_bot.anime import AnimeFLV
 
 
 def get_stars(points=0.0): return ''.join(emoji.emojize(':star:') for _ in range(round(points)))

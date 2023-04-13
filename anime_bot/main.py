@@ -9,7 +9,7 @@ from api import say, send_sticker, host, chat_list
 from central.utils.args_manager import get_arg, get_proxy
 from central.utils.query_manager import create_user, check_admin, set_admin
 from central.utils.talk_manager import say_help, add_text, add_sticker
-from menhera_bot.anime import AnimeCommands
+from anime_bot.anime import AnimeCommands
 from central.utils.logger import BotLogger
 
 bot = telebot.TeleBot(get_arg('token')['value'])

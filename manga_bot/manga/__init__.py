@@ -58,7 +58,6 @@ class MangaCommands:
         ), photo=comic['image'])
 
     def list_comics(self, comics: list, chat_id: int):
-        print(len(comics))
         for comic in comics:
             # sleep(1)
             arguments = self.comic_text(comic)
