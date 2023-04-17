@@ -1,0 +1,15 @@
+- command:
+    name: chapter_today
+    details: Muestra el listado de capitulos del dia de los animes en transmision.
+    only_staff: false
+
+- command:
+    name: anime_today
+    details: Muestra el listado de animes en transmision.
+    only_staff: false
+
+- command:
+    name: [ anime_find, anime_search ]
+    details: Busca un anime con este comando.
+    only_staff: false
+    arguments: name

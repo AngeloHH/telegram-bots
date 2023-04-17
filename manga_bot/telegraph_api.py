@@ -1,8 +1,25 @@
+import datetime
+import io
 import json
 
 import requests
 import telebot
+from PIL import Image
 from bs4 import BeautifulSoup
+
+
+def split_image(image: bytes, max_height: int = 2160) -> list:
+    data = Image.open(io.BytesIO(image))
+    width, height = data.size
+    if height <= max_height: return [image]
+    height, images = height // max_height, []
+    for i in range(height):
+        y = (i * max_height), ((i + 1) * max_height)
+        image_crop = data.crop((0, y[0], width, y[1]))
+        new_image = io.BytesIO()
+        image_crop.save(new_image, format='JPEG')
+        images.append(new_image.getvalue())
+    return images
 
 
 class TelegraphApi:
@@ -30,6 +47,13 @@ class TelegraphApi:
         has_errors = data.status_code == 200
         def get_error(): return self.get_error(data.content)
         return data.json() if has_errors else get_error()
+
+    def upload_images(self, images: list[bytes], callback=None, message=telebot.types.Message):
+        image_list = []
+        def add(array: list, *items): [array.append(item) for item in items]
+        def call(image): callback(image, message, len(image_list))
+        [add(image_list, *split_image(image)) for image in images]
+        return [self.upload_image(image, call) for image in image_list]
 
     def upload_image(self, image: bytes, callback=None, *args, **kwargs):
         def get_url(img): return 'https://telegra.ph' + img['src']

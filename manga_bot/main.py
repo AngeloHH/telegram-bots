@@ -6,27 +6,31 @@ from telebot import apihelper
 from telebot.types import Message
 
 from central.utils.args_manager import get_proxy, get_arg
+from central.utils.commands import CommandManager
 from central.utils.logger import BotLogger
 from central.utils.query_manager import set_admin, create_user, check_admin
-from central.utils.talk_manager import say, send_sticker, say_help, add_sticker, add_text
+from central.utils.talk_manager import say, send_sticker, add_sticker, add_text
 from manga_bot.manga import MangaCommands
 
 bot = telebot.TeleBot(get_arg('token')['value'])
 apihelper.proxy, chats = get_proxy(), []
 manga_command = MangaCommands()
 manga_command.__int__(bot)
+command_manager = CommandManager()
+command_manager.__int__(bot)
+command_manager.set_commands()
 def query_handler(handler): return type(json.loads(handler.data)) != list
 
 
 @bot.message_handler(func=create_user)
 def new_account(message: Message):
     say(bot, message, 'es', 'new-account')
-    bot.send_message(message.chat.id, say_help())
+    bot.send_message(message.chat.id, command_manager.help_command())
 
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message: Message):
-    bot.send_message(message.chat.id, say_help())
+    bot.send_message(message.chat.id, command_manager.help_command())
 
 
 @bot.message_handler(commands=['trending'])

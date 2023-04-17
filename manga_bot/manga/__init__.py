@@ -137,11 +137,11 @@ class MangaCommands:
         images = self.manga_api.get_images(chapter['url'])
         kwargs = dict(chapters=chapters, comic_id=comic_id)
         images = [self.scraper.get(image).content for image in images]
-        create_image = self.telegraph_api.upload_image
+        create_image = self.telegraph_api.upload_images
         next_step = self.bot.register_next_step_handler
         status = say(self.bot, message, 'es', 'download-status')[0]
         self.percent[message.chat.id] = status
-        content = [create_image(i, self.image_percent, status, len(images)) for i in images]
+        content = create_image(images, self.image_percent, status)
         trigger = self.print_chapter(message, content, comic_id)
         next_step(trigger, self.select_chapter, **kwargs)
 

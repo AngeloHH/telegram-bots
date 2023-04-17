@@ -7,8 +7,9 @@ from telebot.types import Message
 
 from api import say, send_sticker, host, chat_list
 from central.utils.args_manager import get_arg, get_proxy
+from central.utils.commands import CommandManager
 from central.utils.query_manager import create_user, check_admin, set_admin
-from central.utils.talk_manager import say_help, add_text, add_sticker
+from central.utils.talk_manager import add_text, add_sticker
 from anime_bot.anime import AnimeCommands
 from central.utils.logger import BotLogger
 
@@ -16,34 +17,34 @@ bot = telebot.TeleBot(get_arg('token')['value'])
 apihelper.proxy = get_proxy()
 anime_commands = AnimeCommands()
 anime_commands.__int__(bot, apihelper.proxy)
+command_manager = CommandManager()
+command_manager.__int__(bot)
+command_manager.set_commands()
 
 
 @bot.message_handler(func=lambda message: create_user(message))
 def new_account(message: Message):
     say(bot, message, 'es', 'new-account')
-    bot.send_message(message.chat.id, say_help())
+    bot.send_message(message.chat.id, command_manager.help_command())
 
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message: Message):
-    bot.send_message(message.chat.id, say_help())
+    bot.send_message(message.chat.id, command_manager.help_command())
 
 
 @bot.message_handler(commands=['chapter_today'])
 def chapters_command(message: Message):
-    """Muestra el listado de capitulos del dia de los animes en transmision."""
     anime_commands.print_chapters(message)
 
 
 @bot.message_handler(commands=['anime_today'])
 def animes_command(message: Message):
-    """Muestra el listado de animes en transmision."""
     anime_commands.animes_today(message)
 
 
 @bot.message_handler(commands=['anime_find', 'anime_search'])
 def find_anime(message: Message):
-    """Busca un anime con este comando."""
     anime_commands.search_result(message)
 
 

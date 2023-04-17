@@ -1,0 +1,15 @@
+- command:
+    name: trending
+    details: Muestra los comics que estan en tendencia
+    only_staff: false
+
+- command:
+    name: populars
+    details: Muestra los comics mas populares hasta ahora
+    only_staff: false
+
+- command:
+    name: search
+    details: Busca entre la enorme biblioteca de comics
+    only_staff: false
+    arguments: name
