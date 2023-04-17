@@ -38,6 +38,27 @@ def add_text(message: Message, bot_id: int, lang: str):
     [requests.post(url, json=t) for t in text]
 
 
+def resend_message(message: Message, bot: telebot.TeleBot):
+    chat_id = message.text.split(' ')
+    chat_id = chat_id[-1] if len(chat_id) == 2 else message.chat.id
+    if message.reply_to_message is None: return None
+    if message.reply_to_message.photo is not None:
+        photo = message.reply_to_message.photo[-1]
+        photo = photo.file_id
+        caption = message.reply_to_message.caption
+        return bot.send_photo(chat_id, photo, caption)
+
+    if message.reply_to_message.document is not None:
+        doc = message.reply_to_message.document.file_id
+        caption = message.reply_to_message.caption
+        return bot.send_document(chat_id, doc, caption)
+
+    if message.reply_to_message.sticker is not None:
+        sticker = message.reply_to_message.sticker
+        sticker = sticker.file_id
+        return bot.send_sticker(chat_id, sticker)
+
+
 def add_sticker(message: Message, bot, lang: str):
     url = host('bot', bot.get_me().id, 'stickers')
     if 'reply_to_message' not in message.json:

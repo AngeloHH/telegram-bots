@@ -9,7 +9,7 @@ from api import say, send_sticker, host, chat_list
 from central.utils.args_manager import get_arg, get_proxy
 from central.utils.commands import CommandManager
 from central.utils.query_manager import create_user, check_admin, set_admin
-from central.utils.talk_manager import add_text, add_sticker
+from central.utils.talk_manager import add_text, add_sticker, resend_message
 from anime_bot.anime import AnimeCommands
 from central.utils.logger import BotLogger
 
@@ -84,30 +84,8 @@ def sticker_id(message: Message):
     bot.send_message(message.chat.id, sticker)
 
 
-@bot.message_handler(commands=['send_message'], func=check_admin)
-def share_notice(message: Message):
-    photo = message.reply_to_message.photo
-    if photo is not None: photo = photo[-1].file_id
-    caption = message.reply_to_message.caption
-    sticker = message.reply_to_message.sticker
-    if sticker is not None: sticker = sticker.file_id
-    send_type = {
-        'text': bot.send_message,
-        'photo': bot.send_photo,
-        'sticker': bot.send_sticker
-    }
-    args = {
-        'text': [caption],
-        'photo': [photo, caption],
-        'sticker': [sticker]
-    }
-    content_type = message.reply_to_message.content_type
-    error_text = 'failed to send a message from chat '
-    error_text = f'[{BotLogger().date}] {error_text}'
-    for chat in chat_list(bot.get_me().id):
-        kwargs = chat['id'], *args[content_type]
-        try: send_type[content_type](*kwargs)
-        except: print(error_text + str(chat['id']))
+@bot.message_handler(commands=['resend_this'], func=check_admin)
+def resend_text(message: Message): resend_message(message, bot)
 
 
 @bot.message_handler(func=lambda message: message.text[0] == '/')
