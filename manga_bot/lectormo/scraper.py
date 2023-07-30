@@ -2,19 +2,21 @@ import datetime
 import re
 
 from bs4 import BeautifulSoup
-from cloudscraper import create_scraper
+from requests import Session
 
-from manga_bot.manga.exceptions import LectorMOExceptions
+from manga_bot.lectormo.exceptions import LectorMOExceptions
 
 
 class LectorMO:
-    def __int__(self):
+    def __init__(self):
         self.exceptions = LectorMOExceptions()
         self.base_url = 'https://lectortmo.com/'
-        self.scraper = create_scraper()
+        self.scraper = Session()
         self.scraper.headers['Referer'] = self.base_url
+        agent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
+        self.scraper.headers['User-Agent'] = agent
 
-    def get_manga(self, raw_text: BeautifulSoup):
+    def _get_manga(self, raw_text: BeautifulSoup):
         script = raw_text.find('style').text
         expression = r"(?P<url>https?://[^\s]+)'\);"
         background = re.search(expression, script)
@@ -40,7 +42,7 @@ class LectorMO:
         tab = container.find('div', {'id': f'pills-{tab_name}'})
         if tab is None: return []
         manga_list = tab.find_all('a')[:-1]
-        return [self.get_manga(manga) for manga in manga_list]
+        return [self._get_manga(manga) for manga in manga_list]
 
     def search(self, query: str) -> list:
         query = query.replace(' ', '+')
@@ -50,9 +52,9 @@ class LectorMO:
         container = soup.find_all('div', {'class': 'row'})[1]
         content = container.find('div', {'class': 'col-xl-9'})
         row = content.find_all('div', {'class': 'row'})[1]
-        return [self.get_manga(a) for a in row.find_all('a')]
+        return [self._get_manga(a) for a in row.find_all('a')]
 
-    def get_hashtag(self, url):
+    def _get_hashtag(self, url):
         content = self.scraper.get(url).content
         soup = BeautifulSoup(content, 'html.parser')
         card = soup.find('div', {'class': 'clearfix'})
@@ -68,7 +70,7 @@ class LectorMO:
         return [{
             'url': meme.find('a')['href'],
             'img': meme.find('img')['src'],
-            'hashtags': self.get_hashtag(meme.find('a')['href'])
+            'hashtags': self._get_hashtag(meme.find('a')['href'])
         } for meme in memes]
 
     def get_scan(self, chapter: BeautifulSoup):
@@ -104,7 +106,7 @@ class LectorMO:
         return [*reversed(chapters)]
 
     def manga_details(self, url: str):
-        content = create_scraper().get(url).content
+        content = self.scraper.get(url).content
         soup = BeautifulSoup(content, 'html.parser')
         title_class = {'class': 'element-title'}
         exception = self.exceptions.too_many_request
@@ -117,9 +119,11 @@ class LectorMO:
         synopsis_class = {'class': 'element-description'}
         synopsis = soup.find('p', synopsis_class).text
         genres = [h6.text for h6 in soup.find_all('h6')]
+        score = soup.find('div', {'class': 'score'}).text.strip()
         return {
             'id': url.split('/')[-2], 'title': title,
-            'subtitle': subtitle, 'genres': genres,
+            'image': soup.find('img', {'class': 'book-thumbnail'})['src'],
+            'subtitle': subtitle, 'genres': genres, 'score': score,
             'synopsis': synopsis, 'chapters': self.get_chapters(soup)
         }
 
