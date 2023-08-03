@@ -15,13 +15,13 @@ class BaseBot:
         self.lang = language or 'en'
         self.command_manager = CommandManager(self.bot)
         self.external_api = CentralApi()
-        check_admin = self.external_api.get_admin
         self.logger = LoggerManager()
         self.commands = [
             dict(commands=['start', 'help'], callback=self.send_welcome),
-            dict(commands=['add_text'], func=check_admin, callback=self.send_welcome),
-            dict(commands=['add_sticker'], func=check_admin, callback=self.send_welcome),
-            dict(commands=['new_token'], func=check_admin, callback=self.send_welcome),
+            dict(commands=['add_text'], func=self._check_admin, callback=self.add_text),
+            dict(commands=['add_sticker'], func=self._check_admin, callback=self.add_sticker),
+            dict(commands=['new_token'], func=self._check_admin, callback=self.new_token),
+            dict(commands=['stop'], func=self._check_admin, callback=self.stop),
         ]
 
     def _next_handler(self, message: telebot.types.Message):
@@ -30,6 +30,9 @@ class BaseBot:
             if command in handler['filters']['commands']:
                 handler['function'](message)
         self.logger.print(message)
+
+    def _check_admin(self, message: telebot.types.Message):
+        return self.external_api.get_admin(message.chat.id)
     
     def _set_handlers(self):
         def custom_handler(function):
@@ -46,6 +49,9 @@ class BaseBot:
     def run(self):
         self._set_handlers()
         self.bot.infinity_polling()
+
+    def stop(self, *args, **kwargs):
+        self.bot.stop_polling()
 
     def send_welcome(self, message: telebot.types.Message):
         commands = self.command_manager.help_command()

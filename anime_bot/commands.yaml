@@ -9,7 +9,7 @@
     only_staff: false
 
 - command:
-    name: [ anime_find, anime_search ]
+    name: anime_search
     details: Busca un anime con este comando.
     only_staff: false
     arguments: name

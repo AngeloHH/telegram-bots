@@ -5,7 +5,6 @@ import telebot
 from telebot.types import Message
 
 from central.utils.query_manager import host
-from anime_bot.help import get_commands
 
 
 def say(bot: telebot.TeleBot, message: Message, language, key, **kwargs):
@@ -15,12 +14,6 @@ def say(bot: telebot.TeleBot, message: Message, language, key, **kwargs):
     for message in response.json():
         messages.append(bot.send_message(chat_id, message['text'], **kwargs))
     return messages
-
-
-def say_help(text='Use /help para mostrar el uso de comandos:\n\n', path='main.py'):
-    for command in get_commands(path):
-        text += f'» /{command.command}\n {command.description}\n\n'
-    return text
 
 
 def send_sticker(bot: telebot.TeleBot, message: Message, key: str, **kwargs):

@@ -19,7 +19,7 @@ def new_account(message: Message):
 if __name__ == '__main__':
     path = os.path.dirname(os.path.abspath(__file__))
     manga_bot.external_api.set_host('127.0.0.1', 8000)
-    args = manga_bot.bot, os.path.join(path, 'commands.yml')
+    args = manga_bot.bot, os.path.join(path, 'commands.yaml')
     manga_bot.command_manager = CommandManager(*args)
     manga_bot.command_manager.set_commands()
     manga_bot.run()
