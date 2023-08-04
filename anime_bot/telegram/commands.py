@@ -69,6 +69,7 @@ class AnimeBot(BaseBot):
         self.bot.register_next_step_handler(*arguments)
 
     def select_chapter(self, message: telebot.types.Message, chapters: list):
+        if not message.text.isdigit(): return self._next_handler(message)
         chapter = self.anime.chapter_details(chapters[int(message.text) - 1])
         text, chat_id = models.chapter_details(chapter), message.chat.id
         keyboard = telebot.types.InlineKeyboardMarkup()

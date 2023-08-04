@@ -27,7 +27,8 @@ class BaseBot:
     def _next_handler(self, message: telebot.types.Message):
         command = re.findall(r"/(\w+)", message.text)[0]
         for handler in self.bot.message_handlers:
-            if command in handler['filters']['commands']:
+            commands = handler['filters'].get('commands', '')
+            if command in commands:
                 handler['function'](message)
         self.logger.print(message)
 
