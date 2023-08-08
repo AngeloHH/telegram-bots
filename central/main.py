@@ -1,13 +1,9 @@
-import os
-
 import uvicorn
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-from starlette.responses import FileResponse
 
 from central import crud, models, schemas
-from central.crud import mega_download, zippy_download, split_zip, media
 from central.database import session_local, engine
 
 models.base.metadata.create_all(bind=engine)
@@ -50,8 +46,10 @@ def add_sticker(bot_id: int, sticker: schemas.Sticker, db: Session = Depends(get
 
 
 @app.get("/bot/{bot_id}/stickers")
-def get_stickers(bot_id: int, db: Session = Depends(get_db)):
-    return crud.get_stickers(db, bot_id)
+def get_stickers(bot_id: int, emoji: str = None, db: Session = Depends(get_db)):
+    stickers = crud.get_stickers(db, bot_id)
+    sticker = next((s for s in stickers if s.emoji == emoji), None)
+    return sticker or stickers
 
 
 @app.get("/bot/{bot_id}/stickers/{name}")
@@ -97,36 +95,6 @@ def rem_token(token: str, user_id: int, db: Session = Depends(get_db)):
     return {'token': None}
 
 
-@app.get("/media/download/{server}")
-def download_file(server: str, url: str, max_size: int = 50, db: Session = Depends(get_db)):
-    server_list = {'mega': mega_download, 'zippyshare': zippy_download}
-    can_download = server not in server_list
-    if can_download: raise HTTPException(404, detail="Server not found")
-    file_name = server_list[server](url)
-    file_size = os.stat(file_name).st_size / (1024 * 1024)
-    file_url = ['/media/get/' + file_name.split(os.sep)[-1]]
-    too_long = file_size >= max_size or max_size != 0
-    return file_url if not too_long else split_zip(file_name)
-
-
-@app.get("/media/delete/{filename}")
-def delete_media(filename: str, db: Session = Depends(get_db)):
-    error = HTTPException(403, 'Parameter not allowed')
-    if '/' in filename or '\\' in filename: raise error
-    if os.path.exists(media() + os.sep + filename):
-        return os.remove(media() + os.sep + filename)
-    raise HTTPException(404, detail="File not found")
-
-
-@app.get("/media/get/{filename}")
-def get_media(filename: str, db: Session = Depends(get_db)):
-    error = HTTPException(403, 'Parameter not allowed')
-    if '/' in filename or '\\' in filename: raise error
-    path = media() + os.sep + filename
-    if os.path.exists(path): return FileResponse(path)
-    raise HTTPException(404, detail="File not found")
-
-
 if __name__ == '__main__':
-    host = {'host': '0.0.0.0', 'port': 8000}
+    host = {'host': '0.0.0.0', 'port': 8089}
     uvicorn.run("__main__:app", **host, reload=True)

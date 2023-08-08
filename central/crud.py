@@ -1,13 +1,10 @@
 import os
 
 from cryptography.fernet import Fernet
-from mega.mega import Mega
 
 from sqlalchemy.orm import Session
 
 from central import models, schemas
-from central.split_zip import zip_file, file_split
-from central.zippy_api import Zippy
 
 
 def media(*args):
@@ -106,25 +103,3 @@ def create_chat(db: Session, chat: schemas.Chat, bot_id: int):
     db.commit()
     db.refresh(db_chat)
     return vars(chat)
-
-
-def mega_download(url) -> str:
-    path = media(Mega().get_public_url_info(url)['name'])
-    if os.path.exists(path): return path
-    return media(Mega().download_url(url, media()).name)
-
-
-def zippy_download(url) -> str:
-    zippy_api = Zippy(url)
-    zippy_api.start()
-    path = media(zippy_api.get_details()['name'])
-    if os.path.exists(path): return path
-    return zippy_api.download(media()).name
-
-
-def split_zip(file_path: str):
-    zipped = zip_file([file_path], file_path + '.zip')
-    files = file_split(zipped, 49, media())
-    def get_name(file): return file.name.split(os.sep)[-1]
-    os.remove(zipped.name), os.remove(file_path)
-    return ['/media/get/' + get_name(file) for file in files]

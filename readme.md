@@ -14,8 +14,8 @@ Installing packages:
 
 Executing central-api and bots:
 
-    python3 central/main.py
+    python3 main.py bot=central
 
-    python3 anime_bot/main.py --token=<your-token>
+    python3 main.py bot=anime_bot token=<your-token>
 
-    python3 manga_bot/main.py --token=<your-token>
+    python3 main.py bot=manga_bot token=<your-token>

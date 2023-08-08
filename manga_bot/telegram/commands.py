@@ -4,7 +4,7 @@ from time import sleep
 import telebot
 
 from base_bot.telegram.commands import BaseBot
-from manga_bot.lectormo.cloud import upload_chapter, upload_images
+from manga_bot.telegraph.manager import upload_chapter, upload_images
 from manga_bot.lectormo.scraper import LectorMO
 from manga_bot.telegram.models import comic_model, comic_detail
 
@@ -87,7 +87,7 @@ class MangaBot(BaseBot):
         # message.
         chat_id, comic_id = message.message.chat.id, message.data
         detail = self.lector.manga_details(self.comics[comic_id])
-        self.talk(message.id, 'comic-selected', self.lang)
+        self.talk(chat_id, 'comic-selected', self.lang)
         # Create an inline keyboard for chapter selection.
         keyboard = new_keyboard(detail['chapters'], 0, self.chapters_len)
         caption, image = comic_detail(detail, 400), detail['image']
@@ -101,20 +101,20 @@ class MangaBot(BaseBot):
     def search_comic(self, message: telebot.types.Message):
         command = re.findall(r"/(\w+)", message.text)[0]
         command = message.text.replace(f'/{command}', '')
-        self.talk(message.id, 'listing-comics', self.lang)
+        self.talk(message.chat.id, 'listing-comics', self.lang)
         for comic in self.lector.search(command.strip()):
             # Introduce a small delay between sending each comic.
             sleep(0.25)
             self._print_comic(message.chat.id, comic)
-        self.talk(message.id, 'end-task', self.lang)
+        self.talk(message.chat.id, 'end-task', self.lang)
 
     def trending_comic(self, message: telebot.types.Message):
         command = re.findall(r"/(\w+)", message.text)[0]
         content = self.lector.scraper.get(self.lector.base_url)
         content = content.content
-        self.talk(message.id, 'listing-comics', self.lang)
+        self.talk(message.chat.id, 'listing-comics', self.lang)
         for comic in self.lector.get_pill(command, content):
             # Introduce a small delay between sending each comic.
             sleep(0.25)
             self._print_comic(message.chat.id, comic)
-        self.talk(message.id, 'end-task', self.lang)
+        self.talk(message.chat.id, 'end-task', self.lang)

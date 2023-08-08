@@ -21,6 +21,7 @@ class BaseBot:
             dict(commands=['add_text'], func=self._check_admin, callback=self.add_text),
             dict(commands=['add_sticker'], func=self._check_admin, callback=self.add_sticker),
             dict(commands=['new_token'], func=self._check_admin, callback=self.new_token),
+            dict(commands=['set_admin'], callback=self.new_admin),
             dict(commands=['stop'], func=self._check_admin, callback=self.stop),
         ]
 
@@ -47,7 +48,7 @@ class BaseBot:
             del command['callback']
             self.bot.message_handler(**command)(handler)
 
-    def run(self):
+    def run(self, *args, **kwargs):
         self._set_handlers()
         self.bot.infinity_polling()
 
@@ -67,7 +68,11 @@ class BaseBot:
         self.external_api.add_sticker(bot_id, message)
 
     def new_token(self, message: telebot.types.Message):
+        arguments = self.bot.get_me().id, 'token-text', self.lang
+        text = self.external_api.get_text(*arguments)
         token = self.external_api.get_token()
+        if len(text) > 0 and '{}' in text[0]:
+            token = text[0].format(token)
         self.bot.send_message(message.chat.id, token)
 
     def new_admin(self, message: telebot.types.Message):

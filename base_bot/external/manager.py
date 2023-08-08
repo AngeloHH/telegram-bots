@@ -10,9 +10,10 @@ class CentralApi:
         response = requests.get(url, params=dict(key=key))
         return [message['text'] for message in response.json()]
 
-    def get_sticker(self, bot_id: int, key: str) -> int:
+    def get_sticker(self, bot_id: int, key: str = None, emoji=None) -> str:
         url = f'{self.base_url}/bot/{bot_id}/stickers/'
-        return requests.get(url + key).json()['sticker_id']
+        url += key if emoji is not None else f'?emoji={emoji}'
+        return requests.get(url).json().get('sticker_id', None)
 
     def get_user(self, user_id: int) -> dict or None:
         response = requests.get(f'{self.base_url}/users/{user_id}')
@@ -29,13 +30,17 @@ class CentralApi:
     def add_user(self, message: Message or CallbackQuery, is_admin: bool):
         account = message.json['from']
         account['is_admin'] = is_admin
-        response = requests.post(f'{self.base_url}/users/', json=account)
-        return response.status_code == 200
+        url = f'{self.base_url}/users/'
+        if self.get_user(message.json['from']['id']) is not None:
+            kwargs = dict(url=url, json=account)
+            response = requests.post(**kwargs)
+            return response.status_code == 200
+        return False
 
     def add_text(self, bot_id: int, lang: str, message: Message):
         key = message.text.split(' ')[1]
         index = message.text.index(key)
-        text = message.text[index:]
+        text = message.text[index + len(key) + 1:]
         url = f'{self.base_url}/bot/{bot_id}/lang/{lang}/add'
         return requests.post(url, json=dict(name=key, text=text))
 
