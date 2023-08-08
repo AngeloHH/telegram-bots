@@ -46,4 +46,5 @@ class CommandManager:
             text += f'» /{command["name"]}'
             text += f' {get_args(command)}'
             text += f'\n {command["details"]}\n\n'
+        self.set_commands()
         return text

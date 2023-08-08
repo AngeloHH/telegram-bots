@@ -89,6 +89,7 @@ class AnimeBot(BaseBot):
         chapter_list = [chapter['url'] for chapter in chapter_list]
         keyboard = new_keyboard(chapter_list, related=False)
         callback, chat_id = self.select_chapter, message.chat.id
+        self.talk(message.chat.id, 'chapters-today', self.lang)
 
         message = self.bot.send_message(chat_id, text, reply_markup=keyboard)
         self.bot.register_next_step_handler(message, callback, chapter_list)
@@ -100,10 +101,12 @@ class AnimeBot(BaseBot):
             self.bot.send_photo(chat_id, **new_anime(anime))
 
     def animes_today(self, message: telebot.types.Message):
+        self.talk(message.chat.id, 'animes-today', self.lang)
         anime_list = self.anime.main_page()[1]
         self.print_animes(anime_list, message.chat.id)
 
     def search_anime(self, message: telebot.types.Message):
+        self.talk(message.chat.id, 'find-anime', self.lang)
         command = re.findall(r"/(\w+)", message.text)[0]
         command = message.text.replace(f'/{command}', '')
         anime_list = self.anime.find_anime(command)
