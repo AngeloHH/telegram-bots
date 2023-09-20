@@ -32,6 +32,12 @@ class MangaBot(BaseBot):
         ])
         self.bot.callback_query_handler(func=lambda _: True)(self.select_comic)
         self.chapters_len = 100
+        self.percent_text = '{}%'
+
+    def _download_process(self, message: telebot.types.Message, percent: float):
+        text = self.percent_text.format('%02d' % percent)
+        if message.text != text:
+            self.bot.edit_message_text(text, message.chat.id, message.id)
 
     def _upload_chapter(self, chat_id: int, comic_name: str, chapter: dict):
         # Get the author's name from the bot's information.
@@ -43,8 +49,10 @@ class MangaBot(BaseBot):
             images = self.lector.get_images(chapter['scans'][0]['url'])
             sleep(1)
         # Upload the downloaded images to the cloud service and get the URLs.
-        urls = upload_chapter(comic_name, author, upload_images(images), 32)
-        return self.bot.send_message(chat_id, urls[-1])
+        message = self.bot.send_message(chat_id, self.percent_text.format(0))
+        urls = upload_images(images, self._download_process, message=message)
+        urls = upload_chapter(comic_name, author, urls, 32)
+        return self.bot.edit_message_text(urls[-1], chat_id, message.id)
 
     def _print_comic(self, chat_id: int, comic: dict):
         url, image = comic['url'], comic['image']

@@ -2,6 +2,7 @@ import io
 import math
 import time
 from io import BytesIO
+from typing import Generator
 
 import requests
 from PIL import Image
@@ -45,7 +46,7 @@ def split_image(url: str, max_width: int, max_height: int, min_height: int) -> l
 
     coordinates = get_coordinates(image.size, (max_width, max_height), min_height)
     # If the max height is less that the current height set the image without cuts
-    coordinates = [image.size] if max_height >= height else coordinates
+    coordinates = [(0, image.size[1])] if max_height >= height else coordinates
     for current, next_height in coordinates:
         buffer = io.BytesIO()
         # Cut the image and save it in an array buffer.
@@ -55,14 +56,16 @@ def split_image(url: str, max_width: int, max_height: int, min_height: int) -> l
     return images
 
 
-def upload_images(images: list[str]) -> list[str]:
+def upload_images(images: list[str], callback=None, **kwargs) -> list[str]:
     images_url, url = [], 'https://telegra.ph/upload'
-    for img in images:
+    for index, img in enumerate(images):
         # Split the image and upload to Telegraph cloud.
         for image in split_image(img, 732, 690, 80):
             data = requests.post(url, files={'file': image})
             data = data.json()[0]['src']
             images_url.append('https://telegra.ph' + data)
+        if callback is not None:
+            callback(percent=(index + 1) / len(images) * 100, **kwargs)
     return images_url
 
 
