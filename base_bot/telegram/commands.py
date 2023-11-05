@@ -1,4 +1,5 @@
 import re
+import time
 
 import telebot
 
@@ -50,7 +51,13 @@ class BaseBot:
 
     def run(self, *args, **kwargs):
         self._set_handlers()
-        self.bot.infinity_polling()
+        while True:
+            try:
+                self.bot.infinity_polling()
+                break
+            except ConnectionError as error:
+                print(error)
+                time.sleep(60)
 
     def stop(self, *args, **kwargs):
         self.bot.stop_polling()

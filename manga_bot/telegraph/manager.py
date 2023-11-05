@@ -2,7 +2,6 @@ import io
 import math
 import time
 from io import BytesIO
-from typing import Generator
 
 import requests
 from PIL import Image

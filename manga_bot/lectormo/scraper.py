@@ -10,7 +10,7 @@ from manga_bot.lectormo.exceptions import LectorMOExceptions
 class LectorMO:
     def __init__(self):
         self.exceptions = LectorMOExceptions()
-        self.base_url = 'https://lectortmo.com/'
+        self.base_url = 'https://visortmo.com/'
         self.scraper = Session()
         self.scraper.headers['Referer'] = self.base_url
         agent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0'
